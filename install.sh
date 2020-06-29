@@ -21,8 +21,8 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 sudo apt update
 sudo apt --assume-yes install docker-ce
 
-echo -e "\nChecking docker status..\n"
-sudo systemctl status docker
+echo -e "\nChecking docker version..\n"
+sudo docker --version
 
 if [ $? -eq 0 ]; then
         echo -e "\nDocker is installed successfully!\n"
