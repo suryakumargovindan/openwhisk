@@ -93,13 +93,13 @@ sudo cp docker-whisk-controller.env incubator-openwhisk-devtools/docker-compose/
 sudo nohup make -C incubator-openwhisk-devtools/docker-compose/ quick-start > install.log &
 
 #Verify OpenWhisk installation
-cmd=`docker ps | grep openwhisk | wc -l`
+cmd=`ps -ef | grep -i nohup | grep -i quick-start | wc -l`
 
-if [ $cmd == 12 ] ; then
-	echo -e "\nOpenWhisk components have been installed successfully!\n"
+if [ $cmd == 1 ] ; then
+	echo -e "\nOpenWhisk components are being installed! Please check the progress in install.log file!\n"
 else 
 	echo ""
-	echo "OpenWhisk is not installed successfully! Please check the install.log file!"
+	echo "OpenWhisk installation is not running! Please run this script again!"
 	exit
 fi
 
