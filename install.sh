@@ -1,19 +1,5 @@
 #!/bin/bash
 
-
-#Install git for cloning the code
-echo -e "\nInstalling git..\n"
-sudo apt-get --assume-yes install git
-
-if [ $? -eq 0 ]; then
-	echo -e "\nGit was successfully installed!\n"
-else 
-	echo ""
-	echo "Git could not be installed! Quitting!"
-	exit
-fi
-
-
 #Update apt to install all necessary components
 echo -e "\nUpdating apt information..\n"
 sudo apt update
@@ -67,7 +53,38 @@ sudo apt --assume-yes install npm
 sudo apt --assume-yes install make
 sudo apt --assume-yes install zip
 
-#Install and configure OpenWhisk client
+#Install OpenWhisk client
+
+client=OpenWhisk_CLI-1.0.0-linux-386.tgz
+
+if [ -f "$client" ]; then
+	
+	sudo tar -xvf $client 
+
+	if [ $? -eq 0 ]; then
+		sudo cp wsk /usr/bin
+	else
+        	echo ""
+	        echo "OpenWhisk Client could not be extracted properly! Please download it manually!"
+	        exit
+	fi
+else
+	echo "OpenWhisk client file does not exist! Please download it manually!"
+	
+fi
+
+
+#Configure OpenWhisk client
+
+sudo wsk property set --apihost 'localhost' --auth '23bc46b1-71f6-4ed5-8c54-816aa4f8c502:123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP'
+
+if [ $? -eq 0 ]; then
+        echo -e "\nWhisk client has been configured and ready to use!"
+else
+        echo ""
+        echo "Whisk client could not be configured! Please check manually!"
+        exit
+fi
 
 
 #Install OpenWhisk 
