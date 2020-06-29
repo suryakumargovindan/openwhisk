@@ -89,6 +89,7 @@ fi
 
 #Install OpenWhisk 
 sudo git clone https://github.com/apache/incubator-openwhisk-devtools.git
+sudo cp docker-whisk-controller.env incubator-openwhisk-devtools/docker-compose/ 
 sudo nohup make -C incubator-openwhisk-devtools/docker-compose/ quick-start > install.log &
 
 #Verify OpenWhisk installation
