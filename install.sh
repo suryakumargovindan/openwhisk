@@ -52,6 +52,7 @@ fi
 sudo apt --assume-yes install npm
 sudo apt --assume-yes install make
 sudo apt --assume-yes install zip
+sudo apt --assume-yes install python-pip
 
 #Install OpenWhisk client
 
