@@ -59,6 +59,20 @@ else
 fi
 
 
+#Install redis components
+
+sudo apt --assume-yes install redis-server
+sudo systemctl enable redis-server.service
+
+if [ $? -eq 0 ]; then
+        echo -e "\nRedis has been installed successfully!\n"
+else
+        echo ""
+        echo "Redis was not installed successfully! Please install again manually!"
+fi
+
+
+
 #Install miscellaneous prerequisites for OpenWhisk
 
 sudo apt --assume-yes install npm
