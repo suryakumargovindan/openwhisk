@@ -47,6 +47,18 @@ else
 fi
 
 
+#Start warm docker container
+
+sudo docker container run -dit  --name wsk0_1_warm_python2 python:rc-alpine3.12
+
+if [ $? -eq 0 ]; then
+        echo -e "\nWarm container has been started successfully!\n"
+else
+        echo ""
+        echo "Warm container could not be started! Please try again manually!"
+fi
+
+
 #Install miscellaneous prerequisites for OpenWhisk
 
 sudo apt --assume-yes install npm
@@ -93,9 +105,8 @@ sudo cp docker-whisk-controller.env incubator-openwhisk-devtools/docker-compose/
 sudo nohup make -C incubator-openwhisk-devtools/docker-compose/ quick-start > install.log &
 
 #Verify OpenWhisk installation
-cmd=`ps -ef | grep -i nohup | grep -i quick-start | wc -l`
 
-if [ $cmd == 1 ] ; then
+if [ $? -eq 0 ]; then
 	echo -e "\nOpenWhisk components are being installed! Please check the progress in install.log file!\n"
 else 
 	echo ""
