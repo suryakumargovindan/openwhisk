@@ -49,7 +49,7 @@ fi
 
 #Start warm docker container
 
-sudo docker container run -dit  --name dedicated_python_1 python:rc-alpine3.12
+sudo docker container run -dit  --name warm0_1_python2 python:2.7-alpine
 
 if [ $? -eq 0 ]; then
         echo -e "\nWarm container has been started successfully!\n"
