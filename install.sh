@@ -114,18 +114,18 @@ else
 fi
 
 
-#Install OpenWhisk 
+#Clone OpenWhisk reporsitory
 sudo git clone https://github.com/apache/incubator-openwhisk-devtools.git
 sudo cp docker-whisk-controller.env incubator-openwhisk-devtools/docker-compose/ 
-sudo nohup make -C incubator-openwhisk-devtools/docker-compose/ quick-start > install.log &
 
 
 #Replace redis port for OpenWhisk
-
 sudo sed -i 's/6379/6370/g' incubator-openwhisk-devtools/docker-compose/docker-compose.yml
 sudo sed -i 's/6379/6370/g' incubator-openwhisk-devtools/docker-compose/docker-compose-lean.yml
 sudo sed -i 's/6379/6370/g' incubator-openwhisk-devtools/docker-compose/docker-compose.packages.yml
 
+#Install OpenWhisk
+sudo nohup make -C incubator-openwhisk-devtools/docker-compose/ quick-start > install.log &
 
 #Verify OpenWhisk installation
 
