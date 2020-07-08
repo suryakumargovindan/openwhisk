@@ -75,15 +75,22 @@ def runtime():
         exit()
 
 
-def execute(env):
+def resource(env):
     
-    cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
+    pulse = 0
+    
+    #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
+    cmd = 'docker ps --filter "name=warm0_" | grep %s'%(env)
     cont = os.popen(cmd).read().strip()
     print ("No. of warm {} containers running - {}".format(env,cont))
 
     # execute if cont is equal or more than 1
 
-
+    if cont >= 1:
+        pulse = 1
+        print ("At least one warm container is running!")
+        return (pulse)
+    
 
 
 def cache():
@@ -98,5 +105,5 @@ def cache():
 
 
 env = runtime()
-execute(env)
+pulse = resource(env)
 cache()
