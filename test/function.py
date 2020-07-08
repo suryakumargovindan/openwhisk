@@ -13,12 +13,12 @@ arg_count = len(sys.argv)
 #exit()
 
 
+function = sys.argv[1] 
+
 def runtime():
 
     # Check and confirm that exactly and only one function is passed at a time as argument to this script
     if arg_count == 2:
-
-        function = sys.argv[1]
 
         if path.exists(function):
 
@@ -83,6 +83,20 @@ def execute(env):
 
     # execute if cont is equal or more than 1
 
+
+
+
+def cache():
+    
+    cmd = "cat %s | grep ^import | sed -e 's/import//g' | sed 's/ //g'"%(function)
+    cont = os.popen(cmd).read().strip()
+    lib = cont.split()
+    print (lib)
+
+
+    # cache and handle the list of libraries displayed in lib variable
+
+
 env = runtime()
 execute(env)
-
+cache()
