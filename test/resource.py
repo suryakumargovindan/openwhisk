@@ -1,9 +1,17 @@
 import os
+from datetime import datetime
+
+# datetime object containing current date and time
 
 def resource():
 
     pulse = 0
 
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
+    req_time = dt_string
+
+    
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     cmd1 = 'echo $(($(date +%s%N)/1000000))'
     exec_start = os.popen(cmd1).read().strip()
@@ -16,6 +24,6 @@ def resource():
 
     exec_time = (int(exec_end)-int(exec_start))
 
-    print (int(exec_time))
+    print (req_time +" "+str(exec_time)+"ms")
 
 resource()
