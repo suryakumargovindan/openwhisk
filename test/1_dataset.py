@@ -1,5 +1,9 @@
 import os
+import sys
 from datetime import datetime
+import pandas
+import csv
+
 
 # datetime object containing current date and time
 
@@ -13,17 +17,27 @@ def resource():
 
     
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
+
+    request = "python /hello.py"
+        
     cmd1 = 'echo $(($(date +%s%N)/1000000))'
     exec_start = os.popen(cmd1).read().strip()
 
-    cmd2 = 'docker exec -it warm0_1_python2 python /hello.py && echo $(($(date +%s%N)/1000000)) > /tmp/log' 
+    cmd2 = "docker exec -i warm0_1_python2 {0} && echo $(($(date +%s%N)/1000000)) > /tmp/1_log".format(request) 
     os.system(cmd2)
 
-    cmd3 = 'cat /tmp/log' 
-    exec_end = os.popen(cmd3).read().strip()
+    cmd3 = ("cat /tmp/1_log") 
 
+    exec_end = os.popen(cmd3).read().strip()
     exec_time = (int(exec_end)-int(exec_start))
 
+
     print (req_time +" "+str(exec_time)+"ms")
+
+
+    with open('/function/test/dataset.csv', 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow([req_time, request, exec_time])
+    
 
 resource()
