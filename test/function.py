@@ -13,7 +13,9 @@ arg_count = len(sys.argv)
 #exit()
 
 
-function = sys.argv[1] 
+if len(sys.argv) == 2:
+    function = sys.argv[1] 
+
 
 def runtime():
 
@@ -80,7 +82,7 @@ def resource(env):
     pulse = 0
     
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
-    cmd = 'docker ps --filter "name=warm0_" | grep %s'%(env)
+    cmd = 'docker ps --filter "name=warm0_" | grep %s | wc -l'%(env)
     cont = os.popen(cmd).read().strip()
     print ("No. of warm {} containers running - {}".format(env,cont))
 

@@ -1,50 +1,73 @@
 import redis
+from datetime import datetime
 
 r1 = redis.StrictRedis(host='34.254.60.203', port=6379, db=1)
 r2 = redis.StrictRedis(host='34.254.60.203', port=6379, db=2)
 r3 = redis.StrictRedis(host='34.254.60.203', port=6379, db=3)
 r4 = redis.StrictRedis(host='34.254.60.203', port=6379, db=4)
 
+
+# replace the variables with name of the library
+
+entry = r1.exists('sql_freq')
 freq = r1.get('sql_freq')
+print(r1.get('sql_freq'))
 print(freq)
 
 
-if freq == 'None':
-    r1.set('sql_freq','New')
-
-elif freq == 'NEW':
+if entry == 0:
+    r1.set('sql_freq','NEW')
     r2.set('sql_count',1)
 
-elif freq == 'INFREQUENT':
-    count = r2.get('sql_count')
-    count += 1
-    r2.set('sql_count','count')
+    # Remove library from cache
 
-    if freq == 5
+
+elif (entry !=0 and freq == 'NEW'):
+    r1.set('sql_freq','INFREQUENT')
+    r2.set('sql_count',2)
+
+
+    # Remove library from cache
+
+elif (entry !=0 and freq == 'INFREQUENT'):
+
+    count = int(r2.get('sql_count'))
+
+
+    if count == 5:
+
+        r1.set('sql_freq','FREQUENT')
+
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d")
         
-        # update the cache path and retain the cache
+        # Find the cache path, update it in redis and retain the cache
+
+        
         r3.set('sql_cpath','/root/.cache/pip/wheels/1a/18/5a/3c918b3de538cabab699fe6a29e0361313bf5a2d7e0b82325a/')
+        r4.set('sql_last_used',dt_string)
 
-    else
 
-        #check if lib exists in cache path and then delete it
+    elif count < 5:
+
+        count += 1
+        r2.set('sql_count',count)
+
         
 
-elif freq == 'FREQUENT'
+elif (entry !=0 and freq == 'FREQUENT'):
     
-
-    # ensure cache path exists in r3 and library is present in the cache
-
-
-
-r3.set('sql_cpath','/root/.cache/pip/wheels/1a/18/5a/3c918b3de538cabab699fe6a29e0361313bf5a2d7e0b82325a/')
+    # Check last used date of library, if it's used more than 10 days before then delete it and set status again to infrequent
+    print("The library is used frequently!")
+     
 
 
-r2 = redis.StrictRedis(host='34.254.60.203', port=6379, db=2)
-
-path = r1.exists('sql_cpath')
-print (path)
+#path = r1.exists('sql_cpath')
+#print (path)
 
 
-
-
+print("\n\n")
+print(r1.get('sql_freq'))
+print(r2.get('sql_count'))
+print(r3.get('sql_cpath'))
+print(r3.get('sql_last_used'))
