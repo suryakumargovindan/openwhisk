@@ -100,7 +100,7 @@ def cache():
     cmd = "cat %s | grep ^import | sed -e 's/import//g' | sed 's/ //g'"%(function)
     cont = os.popen(cmd).read().strip()
     lib = cont.split()
-    print (lib)
+    print (lib[0])
 
 
     # cache and handle the list of libraries displayed in lib variable
