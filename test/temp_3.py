@@ -19,6 +19,9 @@ def cache(lib):
 
     cache_dir = "/root/.cache/pip/wheels"
 
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+
     if path.exists(cache_dir):
 
         cmd = "find %s -name '*.whl' | grep -i %s"%(cache_dir,lib)
@@ -34,11 +37,13 @@ def cache(lib):
     if entry == 0:
         r1.set(lib_freq,'NEW')
         r2.set(lib_count,1)
+        r4.set(lib_last_used,today)
 
     
     elif (entry !=0 and freq == 'NEW'):
         r1.set(lib_freq,'INFREQUENT')
         r2.set(lib_count,2)
+        r4.set(lib_last_used,today)
     
     
     elif (entry !=0 and freq == 'INFREQUENT'):
@@ -48,9 +53,7 @@ def cache(lib):
         if count == 5:
     
             r1.set(lib_freq,'FREQUENT')
-            now = datetime.now()
-            dt_string = now.strftime("%Y-%m-%d")
-            r4.set(lib_last_used,dt_string)
+            r4.set(lib_last_used,today)
             
             # Find the cache path, update it in redis and retain the cache
 
@@ -61,12 +64,14 @@ def cache(lib):
     
             count += 1
             r2.set(lib_count,count)
+            r4.set(lib_last_used,today)
     
     
     elif (entry !=0 and freq == 'FREQUENT'):
     
         # Check last used date of library, if it's used more than 10 days before then delete it and set status again to infrequent
         print("The library is used frequently!")
+        r4.set(lib_last_used,today)
     
     now = datetime.now()
     today = now.strftime("%Y-%m-%d")
@@ -77,7 +82,7 @@ def cache(lib):
     difference = (abs((d1 - d2).days))
     
     if difference == 0:
-       print "Last used before 10 days"
+       print "Library was used very recently!"
     
     
     #path = r1.exists(lib_cpath)
