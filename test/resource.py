@@ -11,19 +11,24 @@ def resource():
     dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
     req_time = dt_string
 
+
+    env = 'python'
     
-    #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
-    cmd1 = 'echo $(($(date +%s%N)/1000000))'
-    exec_start = os.popen(cmd1).read().strip()
+    cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
+    warm = os.popen(cmd1).read().strip()
 
-    cmd2 = 'docker exec -it warm0_1_python2 python /hello.py && echo $(($(date +%s%N)/1000000)) > /tmp/log' 
+    if warm >= 1:
+        print "At least one warm container is present"
+        
+        cmd = "docker ps --format '{{.Names}}' | grep -i %s | grep -i warm | grep -v prewarm"%(env)
+        out = os.popen(cmd).read().strip().split()
+        containers = sorted(out)
+
+        print (containers)
+        exit()
+    
+
+    cmd2 = 'docker exec -i warm0_1_python2 python /hello.py > /tmp/warm_0_1_log' 
     os.system(cmd2)
-
-    cmd3 = 'cat /tmp/log' 
-    exec_end = os.popen(cmd3).read().strip()
-
-    exec_time = (int(exec_end)-int(exec_start))
-
-    print (req_time +" "+str(exec_time)+"ms")
 
 resource()
