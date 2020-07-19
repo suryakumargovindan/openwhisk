@@ -117,6 +117,7 @@ fi
 #Clone OpenWhisk reporsitory
 sudo git clone https://github.com/apache/incubator-openwhisk-devtools.git
 sudo cp docker-whisk-controller.env incubator-openwhisk-devtools/docker-compose/ 
+sudo cp bin/dps /usr/bin
 
 
 #Replace redis port for OpenWhisk
