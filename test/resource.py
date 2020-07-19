@@ -24,11 +24,12 @@ def resource():
         out = os.popen(cmd).read().strip().split()
         containers = sorted(out)
 
-        print (containers)
-        exit()
-    
+        # Remove pulse here
+        cmd2 = "docker exec -i %s python /hello.py > /tmp/warm_0_1_log"%(containers[0])
 
-    cmd2 = 'docker exec -i warm0_1_python2 python /hello.py > /tmp/warm_0_1_log' 
-    os.system(cmd2)
+        
+        # Add pulse here again
+        print (cmd2)
+        exit()
 
 resource()
