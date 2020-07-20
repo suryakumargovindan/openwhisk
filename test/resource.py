@@ -24,10 +24,15 @@ def resource():
         out = os.popen(cmd).read().strip().split()
         containers = sorted(out)
 
+
+        pulse_rem = "rm -rf /tmp/warm_0_1.pulse"
+
         # Remove pulse here
         cmd2 = "docker exec -i %s python /hello.py > /tmp/warm_0_1_log"%(containers[0])
 
-        
+
+        pulse_add = "touch /tmp/warm_0_1.pulse"
+
         # Add pulse here again
         print (cmd2)
         exit()
