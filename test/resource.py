@@ -3,6 +3,21 @@ from datetime import datetime
 
 # datetime object containing current date and time
 
+
+
+def cont_pulse(container):
+
+    cmd = "ps -ef | grep %s | grep docker | wc -l"%(container)
+    count =  os.popen(cmd).read().strip()
+
+    if int(count) > 1:
+        pulse  = 1
+    else:
+        pulse = 0
+
+    return (pulse)
+    
+
 def resource():
 
     pulse = 0
@@ -25,16 +40,29 @@ def resource():
         containers = sorted(out)
 
 
-        pulse_rem = "rm -rf /tmp/warm_0_1.pulse"
+        for x in containers:
+
+            pulse = cont_pulse(x)
+            
+            if pulse == 0:
+                execution_container = x
+                print (execution_container)
+            #    break
+        
+        
+        
+        #print (containers)  
+
+        #pulse = cont_pulse(containers[0])
+
+        #print(pulse)
+
+         
+
 
         # Remove pulse here
-        cmd2 = "docker exec -i %s python /hello.py > /tmp/warm_0_1_log"%(containers[0])
-
-
-        pulse_add = "touch /tmp/warm_0_1.pulse"
 
         # Add pulse here again
-        print (cmd2)
         exit()
 
 resource()
