@@ -10,7 +10,7 @@ def main():
 
     env='python'
     cmd='docker ps --filter "name=warm0_" | grep %s'%(env)
-    time.sleep(60)
+    time.sleep(10)
     print("Hello World!")
     return {cmd}
 
