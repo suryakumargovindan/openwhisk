@@ -11,9 +11,9 @@ def cont_pulse(container):
     count =  os.popen(cmd).read().strip()
 
     if int(count) > 1:
-        pulse  = 1
+        pulse  = 1          #Pulse = 1 means warm container is already occupied
     else:
-        pulse = 0
+        pulse = 0           #Pulse = 0 means warm container is free and not occupied
 
     return (pulse)
     
@@ -26,14 +26,12 @@ def resource():
     dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
     req_time = dt_string
 
-
     env = 'python'
     
     cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     warm = os.popen(cmd1).read().strip()
 
-    if warm >= 1:
-        print "At least one warm container is present"
+    if warm >= 1:   #This means at least one warm container is present
         
         cmd = "docker ps --format '{{.Names}}' | grep -i %s | grep -i warm | grep -v prewarm"%(env)
         out = os.popen(cmd).read().strip().split()
@@ -47,9 +45,7 @@ def resource():
             if pulse == 0:
                 execution_container = x
                 print (execution_container)
-            #    break
-        
-        
+                break
         
         #print (containers)  
 
@@ -57,12 +53,10 @@ def resource():
 
         #print(pulse)
 
-         
-
-
         # Remove pulse here
 
         # Add pulse here again
         exit()
 
 resource()
+execute()
