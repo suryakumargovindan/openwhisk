@@ -36,7 +36,7 @@ def resource():
     cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     warm = os.popen(cmd1).read().strip()
 
-    if warm >= 1:   #This means at least one warm container is present
+    if warm == 1:   #This means at least one warm container is present
         
         cmd = "docker ps --format '{{.Names}}' | grep -i %s | grep -i warm | grep -v prewarm"%(env)
         out = os.popen(cmd).read().strip().split()
@@ -50,43 +50,77 @@ def resource():
                 container = x
                 break
         
+        ##install libraries
         ##execute(container,"test.py")
         
 
 
     else:        #Create a new warm container and install libraries from Cache
 
+        print ("inside else")
+
         cmd1 = "docker run -v /root/.cache/:/cache/ -dit --name warm0_12_python2 python:2.7-alpine"
+        os.system(cmd1)
 
         cmd2 = "cat %s | grep ^import | sed -e 's/import//g' | sed 's/ //g'"%("test.py")
-        cont = os.popen(cmd).read().strip()
+        cont = os.popen(cmd2).read().strip()
         lib = cont.split()
 
+        print (lib)
 
         for x in lib:
 
-            response = requests.get("http://pypi.python.org/pypi/{}/json".format(x))
+            response = requests.get("https://pypi.org/pypi/{}/json".format(x))
 
             if response.status_code == 200:         #Checks if the library is valid
                 
                 ##call cache.py here and install libraries in the new container
 
-                lib_cpath = lib+'_cpath'
+                print(x)
+
+                lib_cpath = x+'_cpath'
                 
                 if r3.exists(lib_cpath) == True:
-                    ## Use the path and call cache.py 
+
+                    ## Use the path, install and call cache.py 
+
+                    whl_path = r3.get(lib_cpath)
+
+                    splt_char = "/"
+                    K = 3
+
+                    temp = whl_path.split(splt_char)
+                    res = splt_char.join(temp[:K]), splt_char.join(temp[K:])
+  
+                    whl = '/cache/'+res[1] 
+
+                    cmd = "docker exec -i warm0_12_python2 pip install %s"%whl 
+                    os.system(cmd)
+
                 
                 else:
                     ##Dowload, install and call the cache.py
+
+                    print("Downloading libraries as it's not found in cache")
+                    
+                    cmd = "docker exec -i warm0_12_python2 pip install %s"%x
+                    os.system(cmd)
+
+        execute("warm0_12_python2", "test.py") 
+
                 
 
 def execute(container,request): #to execute the function and then stop the container
 
-    cmd1 = "docker exec -i {0} {1}".format(container,request)
+
+    cmd0 = "docker cp {0} {1}:/".format(request, container)
+    os.system(cmd0)
+
+    cmd1 = "docker exec -i {0} python /{1}".format(container,request)
     os.system(cmd1)
 
 
-    cmd2 = "docker container stop {0}".format(container)
+    cmd2 = "docker container kill {0}".format(container)
     os.system(cmd2)
 
     cmd3 = "docker container rm {0}".format(container)
