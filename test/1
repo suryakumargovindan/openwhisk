@@ -70,15 +70,9 @@ def resource():
             if response.status_code == 200:         #Checks if the library is valid
                 
                 ##call cache.py here and install libraries in the new container
-
-                lib_cpath = lib+'_cpath'
-                
-                if r3.exists(lib_cpath) == True:
-                    ## Use the path and call cache.py 
-                
-                else:
-                    ##Dowload, install and call the cache.py
-                
+                print ("dummy")
+         
+        
 
 def execute(container,request): #to execute the function and then stop the container
 
