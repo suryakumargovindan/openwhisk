@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import datetime
 from os import path
 import sql
 env='python'

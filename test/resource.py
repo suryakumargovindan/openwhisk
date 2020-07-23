@@ -79,8 +79,10 @@ def resource():
                 print(x)
 
                 lib_cpath = x+'_cpath'
-                
+
                 if r3.exists(lib_cpath) == True:
+
+                    print ("*** YES ***")
 
                     ## Use the path, install and call cache.py 
 
@@ -172,15 +174,19 @@ def cache(lib):
 
         count = int(r2.get(lib_count))
 
-        if count == 5:
+        if count >= 5:
 
             r1.set(lib_freq,'FREQUENT')
             r4.set(lib_last_used,today)
 
-            # Find the cache path, update it in redis and retain the cache
+            ## Find the cache path, update it in redis and retain the cache
 
-            if path.exists(cpath):
-                r3.set(lib_cpath,cpath)
+            cmd = "find ~/.cache/pip/wheels -name '*.whl' |grep -i %s-"%lib
+            result = os.popen(cmd).read().strip()
+            cpath = result.split()
+
+            if path.exists(cpath[0]):
+                r3.set(lib_cpath,cpath[0])
 
         elif count < 5:
 
@@ -204,7 +210,7 @@ def cache(lib):
     difference = (abs((d1 - d2).days))
 
     if difference == 0:
-       print "Library was used very recently!"
+       print ("Library was used very recently!")
 
 
     #path = r1.exists(lib_cpath)
@@ -214,3 +220,4 @@ def cache(lib):
 
 resource()
 #execute("warm0_12_python2","python /delay.py")
+#cache("sql")

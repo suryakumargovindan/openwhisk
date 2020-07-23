@@ -79,3 +79,7 @@ print(r1.get('sql_freq'))
 print(r2.get('sql_count'))
 print(r3.get('sql_cpath'))
 print(r4.get('sql_last_used'))
+
+
+if r3.exists('sql_cpath')==True:
+    print ("yes")
