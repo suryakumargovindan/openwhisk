@@ -4,10 +4,10 @@ import requests
 import redis
 from os import path
 
-r1 = redis.StrictRedis(host='34.254.60.203', port=6379, db=1)
-r2 = redis.StrictRedis(host='34.254.60.203', port=6379, db=2)
-r3 = redis.StrictRedis(host='34.254.60.203', port=6379, db=3)
-r4 = redis.StrictRedis(host='34.254.60.203', port=6379, db=4)
+r1 = redis.StrictRedis(host='localhost', port=6379, db=1)
+r2 = redis.StrictRedis(host='localhost', port=6379, db=2)
+r3 = redis.StrictRedis(host='localhost', port=6379, db=3)
+r4 = redis.StrictRedis(host='localhost', port=6379, db=4)
 
 
 def container_pulse(container):
@@ -97,6 +97,8 @@ def resource():
                     cmd = "docker exec -i warm0_12_python2 pip install %s"%whl 
                     os.system(cmd)
 
+                    cache(x)
+
                 
                 else:
                     ##Dowload, install and call the cache.py
@@ -105,6 +107,8 @@ def resource():
                     
                     cmd = "docker exec -i warm0_12_python2 pip install %s"%x
                     os.system(cmd)
+
+                    cache(x)
 
         execute("warm0_12_python2", "test.py") 
 
