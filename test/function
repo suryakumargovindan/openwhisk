@@ -144,7 +144,7 @@ def libraries(container):
 
                 print("Downloading libraries as it's not found in cache")
 
-                cmd = "docker exec -i {0} pip install {1}".format(container,whl)
+                cmd = "docker exec -i {0} pip install {1}".format(container,x)
                 os.popen(cmd)
 
                 cache(x)
@@ -157,7 +157,7 @@ def resource(env):
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     cmd = 'docker ps --filter "name=warm0_" | grep %s | wc -l'%(env)
     cont = os.popen(cmd).read().strip()
-    print ("No. of warm {} containers running - {}".format(env,cont))
+    print ("\nNo. of warm {} containers running - {}\n".format(env,cont))
 
 
     cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
@@ -204,7 +204,7 @@ def execute(container,request): #to execute the function and then stop the conta
     cmd1 = "docker exec -i {0} python /{1}".format(container,request)
     os.system(cmd1)
 
-    print "\nExecution complete!"
+    print "\nExecution complete!\n"
 
     cmd2 = "docker container kill {0}".format(container)
     os.popen(cmd2)
