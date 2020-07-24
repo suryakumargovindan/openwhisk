@@ -39,29 +39,28 @@ def runtime():
                 runtime = ext[1]
 
                 if runtime == 'py':
-                    print("\nRuntime is python!")
+                    print("Runtime is python!")
                     return ("python")
                 elif runtime == 'js':
-                    print("\nRuntime is JavaScript!")
+                    print("Runtime is JavaScript!")
                     return ("nodejs")
                 elif runtime == 'rb':
-                    print("\nRuntime is Ruby!")
+                    print("Runtime is Ruby!")
                     return ("ruby")
                 elif runtime == 'jar':
-                    print("\nRuntime is Java!")
+                    print("Runtime is Java!")
                     return ("java")
                 elif runtime == 'php':
-                    print("\nRuntime is PHP!")
+                    print("Runtime is PHP!")
                     return ("php")
                 elif runtime == 'swift':
-                    print("\nRuntime is Swift!")
+                    print("Runtime is Swift!")
                     return ("swift")
                 elif runtime == 'go':
-                    print("\nRuntime is Go!")
+                    print("Runtime is Go!")
                     return ("go")
                 else:
-                    print("\nUnknown runtime! Quitting!")
-                    exit()
+                    print("Unknown runtime!")
 
             else:
                 print("Runtime could not be identified! Quitting!")
@@ -108,7 +107,7 @@ def libraries(container):
     cont = os.popen(cmd).read().strip()
     lib = cont.split()
     
-    #print(lib)
+    print(lib)
     
     for x in lib:
     
@@ -116,7 +115,9 @@ def libraries(container):
     
         if response.status_code == 200:  # Checks if the library is valid
     
-            #call cache.py here and install libraries in the new container
+            ##call cache.py here and install libraries in the new container
+    
+            print(x)
     
             lib_cpath = x + '_cpath'
     
@@ -184,9 +185,10 @@ def resource(env):
 
     else:        #Create a new warm container and install libraries from Cache
 
+        print ("inside else")
 
         cmd1 = "docker run -v /root/.cache/:/cache/ -dit --name warm0_12_python2 python:2.7-alpine"
-        os.popen(cmd1)
+        os.system(cmd1)
 
         libraries("warm0_12_python2")
         execute("warm0_12_python2", function)
@@ -199,12 +201,9 @@ def execute(container,request): #to execute the function and then stop the conta
     cmd0 = "docker cp {0} {1}:/".format(request, container)
     os.popen(cmd0)
 
-    print "\n\n"
-
     cmd1 = "docker exec -i {0} python /{1}".format(container,request)
     os.system(cmd1)
 
-    print "\nExecution complete!"
 
     cmd2 = "docker container kill {0}".format(container)
     os.popen(cmd2)
@@ -234,8 +233,8 @@ def cache(lib):
 
     entry = r1.exists(lib_freq)
     freq = r1.get(lib_freq)
-    #print(r1.get(lib_freq))
-    #print(freq)
+    print(r1.get(lib_freq))
+    print(freq)
 
 
     if entry == 0:
@@ -257,7 +256,7 @@ def cache(lib):
             r1.set(lib_freq,'FREQUENT')
             r4.set(lib_last_used,today)
 
-            # Find the cache path, update it in redis and retain the cache
+            ## Find the cache path, update it in redis and retain the cache
 
             cmd = "find ~/.cache/pip/wheels -name '*.whl' |grep -i %s-"%lib
             result = os.popen(cmd).read().strip()
@@ -276,7 +275,7 @@ def cache(lib):
     elif (entry !=0 and freq == 'FREQUENT'):
 
         # Check last used date of library, if it's used more than 10 days before then delete it and set status again to infrequent
-        # print("The library is used frequently!")
+        print("The library is used frequently!")
         r4.set(lib_last_used,today)
 
     now = datetime.now()
@@ -288,12 +287,10 @@ def cache(lib):
     difference = (abs((d1 - d2).days))
 
     if difference == 0:
+       print ("Library was used very recently!")
 
-        ##remove the cache
-        #print ("Library was used very recently!")
-
-        r1.exists(lib_cpath)
-        #print (path)
+    #path = r1.exists(lib_cpath)
+    #print (path)
 
 
 env = runtime()

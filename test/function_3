@@ -188,8 +188,8 @@ def resource(env):
         cmd1 = "docker run -v /root/.cache/:/cache/ -dit --name warm0_12_python2 python:2.7-alpine"
         os.popen(cmd1)
 
-        libraries("warm0_12_python2")
-        execute("warm0_12_python2", function)
+        libraries("wsk0_1_warm_python3")
+        execute("wsk0_1_warm_python3", function)
 
 
     
