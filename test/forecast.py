@@ -1,22 +1,21 @@
 import pandas as pd
 
-
 header_list = ["time", "command", "duration"]
-data_s = pd.read_csv('/function/test/dataset.csv', names=header_list)
+#filename = "C:/Users/Surya/OneDrive/NCI/RP/mount/server/dataset.csv"
+filename = "/function/test/dataset_copy.csv"
 
+df = pd.read_csv(filename,names=header_list)
+df[['date','time']] = df["time"].str.split(" ", 1, expand = True)
 
-commands = (data_s['command'].unique()).tolist()
+df_time = pd.DataFrame()
 
-print (commands)
-group = data_s.groupby('command')
-df_process = group.apply(lambda x: x['time'].unique())
+df_time = df["time"].str.split(':', 0, expand = True)
 
-print(df_process['python /test.py'])
+hour = df_time.iloc[:,0]
 
-for command in commands:
-    times = df_process[command]
+minute = df_time.iloc[:,1]
 
-    times.str.split("t", n = 1, expand = True)
+second = df_time.iloc[:,2]
 
-
+print (df_time)
 
