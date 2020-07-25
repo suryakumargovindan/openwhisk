@@ -12,7 +12,6 @@ r1 = redis.StrictRedis(host='localhost', port=6379, db=1)
 r2 = redis.StrictRedis(host='localhost', port=6379, db=2)
 r3 = redis.StrictRedis(host='localhost', port=6379, db=3)
 r4 = redis.StrictRedis(host='localhost', port=6379, db=4)
-r5 = redis.StrictRedis(host='localhost', port=6379, db=5)
 
 arguments = sys.argv
 arg_count = len(sys.argv)
@@ -20,6 +19,7 @@ arg_count = len(sys.argv)
 #print (sys.argv[0])
 #print (arg_count)
 #exit()
+
 
 if len(sys.argv) == 2:
     function = sys.argv[1] 
@@ -86,6 +86,7 @@ def runtime():
         exit()
 
 
+
 def container_pulse(container):
 
     cmd = "ps -ef | grep %s | grep docker | wc -l"%(container)
@@ -97,22 +98,6 @@ def container_pulse(container):
         pulse = 0           #Pulse = 0 means warm container is free and not occupied
 
     return (pulse)
-
-
-
-def logger(cmd2):
-
-    cmd1 = 'echo $(($(date +%s%N)/1000000))'
-    exec_start = os.popen(cmd1).read().strip()
-
-    os.system(cmd2)
-
-    cmd3 = ("cat /tmp/pip_log")
-    exec_end = os.popen(cmd3).read().strip()
-
-    time = (int(exec_end) - int(exec_start))
-
-    return (time)
 
 
 def libraries(container):
@@ -147,9 +132,16 @@ def libraries(container):
     
                 whl = '/cache/' + res[1]
 
-                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
+                cmd1 = 'echo $(($(date +%s%N)/1000000))'
+                exec_start = os.popen(cmd1).read().strip()
+    
+                cmd2 = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
+                os.system(cmd2)
+                
+                cmd3 = ("cat /tmp/pip_log")
+                exec_end = os.popen(cmd3).read().strip()
 
-                install_time = logger(cmd)
+                install_time = (int(exec_end)-int(exec_start))
 
                 cache(x, install_time)
     
@@ -159,11 +151,19 @@ def libraries(container):
 
                 print("Downloading libraries as it's not found in cache")
 
-                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
+                cmd1 = 'echo $(($(date +%s%N)/1000000))'
+                exec_start = os.popen(cmd1).read().strip()
 
-                install_time = logger(cmd)
+                cmd2 = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
+                os.system(cmd2)
+
+                cmd3 = ("cat /tmp/pip_log")
+                exec_end = os.popen(cmd3).read().strip()
+
+                install_time = (int(exec_end)-int(exec_start))
 
                 cache(x, install_time)
+
 
 
 def resource(env):
@@ -216,20 +216,10 @@ def execute(container,request): #to execute the function and then stop the conta
 
     print "\n\n"
 
+    cmd1 = "docker exec -i {0} python /{1}".format(container,request)
+    os.system(cmd1)
 
-    cmd1 = 'echo $(($(date +%s%N)/1000000))'
-    exec_start = os.popen(cmd1).read().strip()
-
-    cmd2 = "docker exec -i {0} python /{1} && echo $(($(date +%s%N)/1000000)) > /tmp/exec_log".format(container,request)
-    os.system(cmd2)
-
-    cmd3 = ("cat /tmp/exec_log")
-    exec_end = os.popen(cmd3).read().strip()
-
-    execution_time = (int(exec_end) - int(exec_start))
-
-
-    print ("\nExecution complete! Total execution time is - {}ms\n".format(execution_time))
+    print "\nExecution complete!\n"
 
     cmd2 = "docker container kill {0}".format(container)
     os.popen(cmd2)
@@ -238,13 +228,13 @@ def execute(container,request): #to execute the function and then stop the conta
     os.popen(cmd3)
 
 
-def cache(lib, install_time):
+def cache(lib, time):
 
     lib_freq = lib+'_freq'
     lib_count = lib+'_count'
     lib_cpath = lib+'_cpath'
     lib_last_used = lib+'_last_used'
-    lib_install_time = lib+'_install_time'
+    lib_install_time = 'time'
     cpath = 'None'
 
     cache_dir = "/root/.cache/pip/wheels"
@@ -259,20 +249,10 @@ def cache(lib, install_time):
 
 
     entry = r1.exists(lib_freq)
-    time = r5.exists(lib_install_time)
     freq = r1.get(lib_freq)
     #print(r1.get(lib_freq))
     #print(freq)
 
-
-    if time == 0:
-        r5.set(lib_install_time, install_time)
-
-    else:
-        time_old = r5.get(lib_install_time)
-        
-        if int(time_old) < int(install_time):
-            r5.set(lib_install_time, install_time)
 
     if entry == 0:
         r1.set(lib_freq,'NEW')

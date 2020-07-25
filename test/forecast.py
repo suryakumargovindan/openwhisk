@@ -17,5 +17,7 @@ minute = df_time.iloc[:,1]
 
 second = df_time.iloc[:,2]
 
+df_time.to_csv("/function/test/formatted.csv", mode='a', sep=',', index=False, header=False)
+
 print (df_time)
 
