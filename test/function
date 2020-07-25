@@ -44,7 +44,7 @@ def runtime():
                 runtime = ext[1]
 
                 if runtime == 'py':
-                    print("\nRuntime is python!")
+                    print("\nRuntime is Python!")
                     return ("python")
                 elif runtime == 'js':
                     print("\nRuntime is JavaScript!")
@@ -111,7 +111,7 @@ def logger(cmd2):
     cmd1 = 'echo $(($(date +%s%N)/1000000))'
     exec_start = os.popen(cmd1).read().strip()
 
-    os.system(cmd2)
+    os.popen(cmd2)
 
     cmd3 = ("cat /tmp/pip_log")
     exec_end = os.popen(cmd3).read().strip()
@@ -152,7 +152,7 @@ def libraries(container):
     
                 whl = '/cache/' + res[1]
 
-                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
+                cmd = "docker exec -i {0} pip3 install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
 
                 install_time = logger(cmd)
 
@@ -165,7 +165,7 @@ def libraries(container):
 
                 print("Downloading libraries as it's not found in cache")
 
-                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
+                cmd = "docker exec -i {0} pip3 install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
 
                 install_time = logger(cmd)
 
@@ -179,14 +179,16 @@ def resource(env):
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     cmd = 'docker ps --filter "name=warm0_" | grep %s | wc -l'%(env)
     cont = os.popen(cmd).read().strip()
-    print ("\nNo. of warm {} containers running - {}\n".format(env,cont))
+    #print ("\nNo. of warm {} containers running - {}\n".format(env,cont))
 
 
     cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     warm = os.popen(cmd1).read().strip()
 
 
-    if warm == 1:   #This means at least one warm container is present
+    if warm == 1:   #This means at least one warm container is present ##change this to >=1
+
+        execution_type = "warm"
 
         cmd = "docker ps --format '{{.Names}}' | grep -i %s | grep -i warm | grep -v prewarm"%(env)
         out = os.popen(cmd).read().strip().split()
@@ -203,8 +205,9 @@ def resource(env):
 
     else:        #Create a new warm container 
         
-        container = 'warm0_12_python2'
-        cmd = "docker run -v /root/.cache/:/cache/ -dit --name %s python:2.7-alpine"%container
+        execution_type = "cold"
+        container = 'warm0_12_python3'
+        cmd = "docker run -v /root/.cache/:/cache/ -dit --name %s python:rc-alpine3.12"%container
         os.popen(cmd)
 
     install_time = libraries(container) #install required libraries on new container
@@ -214,7 +217,7 @@ def resource(env):
 
     with open('/function/test/functions_list.csv', 'a') as file:
         writer = csv.writer(file)
-        writer.writerow([request_time, function, total_time])
+        writer.writerow([request_time, function, total_time, execution_type])
 
 
     
@@ -224,20 +227,24 @@ def execute(container,request): #to execute the function and then stop the conta
     cmd0 = "docker cp {0} {1}:/".format(request, container)
     os.popen(cmd0)
 
-    print "\n\n"
+    print "\nOutput of execution is:\n"
 
     cmd1 = 'echo $(($(date +%s%N)/1000000))'
     exec_start = os.popen(cmd1).read().strip()
 
+    print "{"
+
     cmd2 = "docker exec -i {0} python /{1} && echo $(($(date +%s%N)/1000000)) > /tmp/exec_log".format(container,request)
     os.system(cmd2)
+
+    print "}"
 
     cmd3 = ("cat /tmp/exec_log")
     exec_end = os.popen(cmd3).read().strip()
 
     execution_time = (int(exec_end) - int(exec_start))
 
-    print ("\nExecution complete! Total execution time is - {}ms\n".format(execution_time))
+    print ("\nExecution complete! Function execution time is - {}ms\n".format(execution_time))
 
     cmd2 = "docker container kill {0}".format(container)
     os.popen(cmd2)

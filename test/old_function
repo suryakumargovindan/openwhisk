@@ -3,7 +3,7 @@
 import sys
 import os
 import time
-import os
+import csv
 from datetime import datetime
 import requests
 import redis
@@ -13,14 +13,19 @@ r1 = redis.StrictRedis(host='localhost', port=6379, db=1)
 r2 = redis.StrictRedis(host='localhost', port=6379, db=2)
 r3 = redis.StrictRedis(host='localhost', port=6379, db=3)
 r4 = redis.StrictRedis(host='localhost', port=6379, db=4)
+r5 = redis.StrictRedis(host='localhost', port=6379, db=5)
 
 arguments = sys.argv
 arg_count = len(sys.argv)
 
+now = datetime.now()
+dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
+request_time = dt_string
+
+
 #print (sys.argv[0])
 #print (arg_count)
 #exit()
-
 
 if len(sys.argv) == 2:
     function = sys.argv[1] 
@@ -87,7 +92,6 @@ def runtime():
         exit()
 
 
-
 def container_pulse(container):
 
     cmd = "ps -ef | grep %s | grep docker | wc -l"%(container)
@@ -101,8 +105,23 @@ def container_pulse(container):
     return (pulse)
 
 
+
+def logger(cmd2):
+
+    cmd1 = 'echo $(($(date +%s%N)/1000000))'
+    exec_start = os.popen(cmd1).read().strip()
+
+    os.system(cmd2)
+
+    cmd3 = ("cat /tmp/pip_log")
+    exec_end = os.popen(cmd3).read().strip()
+
+    time = (int(exec_end) - int(exec_start))
+
+    return (time)
+
+
 def libraries(container):
-    
     
     cmd = "cat %s | grep ^import | sed -e 's/import//g' | sed 's/ //g'" % (function)
     cont = os.popen(cmd).read().strip()
@@ -132,11 +151,13 @@ def libraries(container):
                 res = splt_char.join(temp[:K]), splt_char.join(temp[K:])
     
                 whl = '/cache/' + res[1]
-    
-                cmd = "docker exec -i {0} pip install {1}".format(container,whl)
-                os.popen(cmd)
-    
-                cache(x)
+
+                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
+
+                install_time = logger(cmd)
+
+                cache(x, install_time)
+
     
             else:
                 
@@ -144,12 +165,13 @@ def libraries(container):
 
                 print("Downloading libraries as it's not found in cache")
 
-                cmd = "docker exec -i {0} pip install {1}".format(container,whl)
-                os.popen(cmd)
+                cmd = "docker exec -i {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
 
-                cache(x)
+                install_time = logger(cmd)
 
+                cache(x, install_time)
 
+        return (install_time)
 
 def resource(env):
     
@@ -157,7 +179,7 @@ def resource(env):
     #cmd = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
     cmd = 'docker ps --filter "name=warm0_" | grep %s | wc -l'%(env)
     cont = os.popen(cmd).read().strip()
-    print ("No. of warm {} containers running - {}".format(env,cont))
+    print ("\nNo. of warm {} containers running - {}\n".format(env,cont))
 
 
     cmd1 = "docker ps | grep -i %s | grep -i warm | grep -v prewarm | wc -l"%(env)
@@ -178,18 +200,21 @@ def resource(env):
                 container = x
                 break
 
-        ##install libraries
-        libraries(container)
-        execute(container,function)
 
-    else:        #Create a new warm container and install libraries from Cache
+    else:        #Create a new warm container 
+        
+        container = 'warm0_12_python2'
+        cmd = "docker run -v /root/.cache/:/cache/ -dit --name %s python:2.7-alpine"%container
+        os.popen(cmd)
 
+    install_time = libraries(container) #install required libraries on new container
+    execution_time = execute(container, function) #execute the function in new container
 
-        cmd1 = "docker run -v /root/.cache/:/cache/ -dit --name warm0_12_python2 python:2.7-alpine"
-        os.popen(cmd1)
+    total_time = int(install_time) + int(execution_time) #Calculate total execution time
 
-        libraries("wsk0_1_warm_python3")
-        execute("wsk0_1_warm_python3", function)
+    with open('/function/test/functions_list.csv', 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow([request_time, function, total_time])
 
 
     
@@ -201,10 +226,18 @@ def execute(container,request): #to execute the function and then stop the conta
 
     print "\n\n"
 
-    cmd1 = "docker exec -i {0} python /{1}".format(container,request)
-    os.system(cmd1)
+    cmd1 = 'echo $(($(date +%s%N)/1000000))'
+    exec_start = os.popen(cmd1).read().strip()
 
-    print "\nExecution complete!"
+    cmd2 = "docker exec -i {0} python /{1} && echo $(($(date +%s%N)/1000000)) > /tmp/exec_log".format(container,request)
+    os.system(cmd2)
+
+    cmd3 = ("cat /tmp/exec_log")
+    exec_end = os.popen(cmd3).read().strip()
+
+    execution_time = (int(exec_end) - int(exec_start))
+
+    print ("\nExecution complete! Total execution time is - {}ms\n".format(execution_time))
 
     cmd2 = "docker container kill {0}".format(container)
     os.popen(cmd2)
@@ -212,13 +245,16 @@ def execute(container,request): #to execute the function and then stop the conta
     cmd3 = "docker container rm {0}".format(container)
     os.popen(cmd3)
 
+    return (execution_time)
 
-def cache(lib):
+
+def cache(lib, install_time):
 
     lib_freq = lib+'_freq'
     lib_count = lib+'_count'
     lib_cpath = lib+'_cpath'
     lib_last_used = lib+'_last_used'
+    lib_install_time = lib+'_install_time'
     cpath = 'None'
 
     cache_dir = "/root/.cache/pip/wheels"
@@ -233,10 +269,20 @@ def cache(lib):
 
 
     entry = r1.exists(lib_freq)
+    time = r5.exists(lib_install_time)
     freq = r1.get(lib_freq)
     #print(r1.get(lib_freq))
     #print(freq)
 
+
+    if time == 0:
+        r5.set(lib_install_time, install_time)
+
+    else:
+        time_old = r5.get(lib_install_time)
+        
+        if int(time_old) < int(install_time):
+            r5.set(lib_install_time, install_time)
 
     if entry == 0:
         r1.set(lib_freq,'NEW')
