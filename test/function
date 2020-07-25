@@ -3,6 +3,7 @@
 import sys
 import os
 import time
+import csv
 from datetime import datetime
 import requests
 import redis
@@ -16,6 +17,11 @@ r5 = redis.StrictRedis(host='localhost', port=6379, db=5)
 
 arguments = sys.argv
 arg_count = len(sys.argv)
+
+now = datetime.now()
+dt_string = now.strftime("%Y-%m-%d %H:%M:%S")
+request_time = dt_string
+
 
 #print (sys.argv[0])
 #print (arg_count)
@@ -117,7 +123,6 @@ def logger(cmd2):
 
 def libraries(container):
     
-    
     cmd = "cat %s | grep ^import | sed -e 's/import//g' | sed 's/ //g'" % (function)
     cont = os.popen(cmd).read().strip()
     lib = cont.split()
@@ -152,6 +157,7 @@ def libraries(container):
                 install_time = logger(cmd)
 
                 cache(x, install_time)
+
     
             else:
                 
@@ -165,6 +171,7 @@ def libraries(container):
 
                 cache(x, install_time)
 
+        return (install_time)
 
 def resource(env):
     
@@ -193,18 +200,21 @@ def resource(env):
                 container = x
                 break
 
-        ##install libraries
-        libraries(container)
-        execute(container,function)
 
-    else:        #Create a new warm container and install libraries from Cache
+    else:        #Create a new warm container 
+        
+        container = 'warm0_12_python2'
+        cmd = "docker run -v /root/.cache/:/cache/ -dit --name %s python:2.7-alpine"%container
+        os.popen(cmd)
 
+    install_time = libraries(container) #install required libraries on new container
+    execution_time = execute(container, function) #execute the function in new container
 
-        cmd1 = "docker run -v /root/.cache/:/cache/ -dit --name warm0_12_python2 python:2.7-alpine"
-        os.popen(cmd1)
+    total_time = int(install_time) + int(execution_time) #Calculate total execution time
 
-        libraries("warm0_12_python2")
-        execute("warm0_12_python2", function)
+    with open('/function/test/functions_list.csv', 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow([request_time, function, total_time])
 
 
     
@@ -215,7 +225,6 @@ def execute(container,request): #to execute the function and then stop the conta
     os.popen(cmd0)
 
     print "\n\n"
-
 
     cmd1 = 'echo $(($(date +%s%N)/1000000))'
     exec_start = os.popen(cmd1).read().strip()
@@ -228,7 +237,6 @@ def execute(container,request): #to execute the function and then stop the conta
 
     execution_time = (int(exec_end) - int(exec_start))
 
-
     print ("\nExecution complete! Total execution time is - {}ms\n".format(execution_time))
 
     cmd2 = "docker container kill {0}".format(container)
@@ -236,6 +244,8 @@ def execute(container,request): #to execute the function and then stop the conta
 
     cmd3 = "docker container rm {0}".format(container)
     os.popen(cmd3)
+
+    return (execution_time)
 
 
 def cache(lib, install_time):
