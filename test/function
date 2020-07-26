@@ -48,28 +48,42 @@ def runtime():
                     return ("python")
                 elif runtime == 'js':
                     print("\nRuntime is JavaScript!")
-                    return ("nodejs")
+                    print("\nAt this point function does not support JavaScript! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 elif runtime == 'rb':
                     print("\nRuntime is Ruby!")
-                    return ("ruby")
+                    print("\nAt this point function does not support JavaScript! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 elif runtime == 'jar':
                     print("\nRuntime is Java!")
-                    return ("java")
+                    print("\nAt this point function does not support Java! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 elif runtime == 'php':
                     print("\nRuntime is PHP!")
-                    return ("php")
+                    print("\nAt this point function does not support PHP! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 elif runtime == 'swift':
                     print("\nRuntime is Swift!")
-                    return ("swift")
+                    print("\nAt this point function does not support Swift! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 elif runtime == 'go':
                     print("\nRuntime is Go!")
-                    return ("go")
+                    print("\nAt this point function does not support golang! Quitting!\n")
+                    time.sleep(1)
+                    exit()
                 else:
-                    print("\nUnknown runtime! Quitting!")
+                    print("\nUnknown runtime! Quitting!\n")
+                    time.sleep(1)
                     exit()
 
             else:
-                print("Runtime could not be identified! Quitting!")
+                print("\nRuntime could not be identified! Quitting!\n")
+                time.sleep(1)
                 exit()
 
         else:
