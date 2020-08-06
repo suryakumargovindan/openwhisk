@@ -19,6 +19,6 @@ for i in range(len(df)):
     minute = schedule[1]
     second = schedule[2]
 
-    cmd = "echo 'sleep {0}; docker run -v /root/.cache/:/cache/ -dit --name warm0_10_python3 python:rc-alpine3.12' | at {1}:{2}".format(second, minute, hour)
+    cmd = "echo 'sleep {0}; docker run -v /root/.cache/:/cache/ -dit --name warm0_10_python3 python:rc-alpine3.12' docker exec warm0_10_python3 pip3 install sql | at {1}:{2}".format(second, minute, hour)
 
     print (cmd)
