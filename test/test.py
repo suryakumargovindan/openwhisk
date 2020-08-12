@@ -1,10 +1,9 @@
-#!/usr/bin/python
-
 import sql
 
 def main():
-
-    print("Hello World!")
+    name = ("World")
+    greeting = "Hello " + name + "!"
+    print(greeting)
+    return {"greeting": greeting}
 
 main()
-

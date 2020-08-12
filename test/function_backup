@@ -168,7 +168,7 @@ def libraries(container):
     
                 whl = '/cache/' + res[1]
 
-                cmd = "docker exec {0} pip3 install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
+                cmd = "docker exec {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,whl)
 
                 install_time = logger(cmd)
 
@@ -181,7 +181,7 @@ def libraries(container):
 
                 print("Downloading libraries as it's not found in cache...\n")
 
-                cmd = "docker exec {0} pip3 install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
+                cmd = "docker exec {0} pip install {1} && echo $(($(date +%s%N)/1000000)) > /tmp/pip_log".format(container,x)
 
                 install_time = logger(cmd)
 
@@ -223,7 +223,7 @@ def resource(env):
 
         execution_type = "cold"
         
-        container = 'warm0_10_python3'
+        container = 'warm0_1_python3'
         cmd = "docker run -v /root/.cache/:/cache/ -dit --name %s python:rc-alpine3.12"%container
         os.popen(cmd)
 
@@ -253,8 +253,6 @@ def execute(container,request): #to execute the function and then stop the conta
     print ("Output of the execution is:\n")
     print ("{")
 
-    #cmd2 = "docker exec -i {0} python /{1} && echo $(($(date +%s%N)/1000000)) > /tmp/exec_log".format(container,request)
-    #request = "/test.py"
     cmd2 = "docker exec -i {0} python /{1} && echo $(($(date +%s%N)/1000000)) > /tmp/exec_log".format(container,request)
     os.system(cmd2)
 
